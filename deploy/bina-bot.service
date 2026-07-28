@@ -1,0 +1,17 @@
+[Unit]
+Description=Bina Telegram news bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Adjust the path and user to match your actual install location.
+# مسیر و کاربر را متناسب با محل نصب واقعی خودتان تغییر دهید.
+WorkingDirectory=/home/%i/bina
+EnvironmentFile=/home/%i/bina/.env
+ExecStart=/home/%i/bina/.venv/bin/bina-bot run
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

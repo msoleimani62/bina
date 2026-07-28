@@ -1,0 +1,13 @@
+{
+  "welcome": "Welcome to Bina! I collect news from the sources you choose and translate it into your language.",
+  "menu_settings": "Settings",
+  "menu_saved": "Saved",
+  "menu_subscriptions": "Categories",
+  "settings_language": "Translation language",
+  "settings_mute_list": "Muted feeds",
+  "feed_added_probation": "Feed added. It's on probation and will only be delivered to you until it proves reliable.",
+  "feed_invalid": "That doesn't look like a valid RSS feed. Please check the URL and try again.",
+  "article_saved": "Saved.",
+  "article_marked_read": "Marked as read.",
+  "article_deleted": "Deleted from your saved list."
+}
