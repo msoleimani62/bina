@@ -1,7 +1,7 @@
 [project]
 name = "bina"
 version = "0.1.1"
-description = "Bina — a modular, multi-user Telegram news bot with built-in translation."
+description = "Bina — a modular, multi-user Telegram news bot that collects RSS feeds, translates content, and delivers personalized news."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
