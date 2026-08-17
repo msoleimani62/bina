@@ -26,9 +26,7 @@ __all__ = ["get_muted_feed_ids", "list_followed_feeds", "toggle_mute"]
 async def toggle_mute(session: AsyncSession, user_id: int, feed_id: int) -> bool:
     """Returns True if the feed is now muted, False if now unmuted."""
     result = await session.execute(
-        select(UserFeedMute).where(
-            UserFeedMute.user_id == user_id, UserFeedMute.feed_id == feed_id
-        )
+        select(UserFeedMute).where(UserFeedMute.user_id == user_id, UserFeedMute.feed_id == feed_id)
     )
     existing = result.scalar_one_or_none()
 

@@ -16,7 +16,6 @@ from bina.core.models import (
     Feed,
     FeedStatus,
     User,
-    UserDelivery,
     UserSubscription,
 )
 
@@ -137,7 +136,9 @@ async def test_deliver_is_not_repeated_for_same_user_and_article(session_factory
         await session.refresh(user)
         await session.refresh(feed)
 
-        article = Article(feed_id=feed.id, guid="g1", title="Hello", summary=None, link="https://a/1")
+        article = Article(
+            feed_id=feed.id, guid="g1", title="Hello", summary=None, link="https://a/1"
+        )
         session.add(article)
         await session.commit()
         await session.refresh(article)
@@ -166,7 +167,9 @@ async def test_delivery_cycle_only_reaches_subscribed_users(session_factory):
         await session.refresh(feed)
 
         session.add(UserSubscription(user_id=subscribed_user.id, category="tech"))
-        article = Article(feed_id=feed.id, guid="g1", title="Hello", summary=None, link="https://a/1")
+        article = Article(
+            feed_id=feed.id, guid="g1", title="Hello", summary=None, link="https://a/1"
+        )
         session.add(article)
         await session.commit()
 

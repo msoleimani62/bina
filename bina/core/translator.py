@@ -84,9 +84,7 @@ async def get_or_translate_article(
 
     translated_title = await provider.translate(article.title, target_lang)
     translated_body = (
-        await provider.translate(article.summary, target_lang)
-        if article.summary
-        else ""
+        await provider.translate(article.summary, target_lang) if article.summary else ""
     )
 
     translation = ArticleTranslation(

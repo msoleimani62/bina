@@ -34,9 +34,7 @@ async def handle_addfeed(message: Message, command: CommandObject) -> None:
     category = args[1].strip() if len(args) > 1 else DEFAULT_CATEGORY
 
     async with get_session() as session:
-        result = await session.execute(
-            select(User).where(User.telegram_id == message.from_user.id)
-        )
+        result = await session.execute(select(User).where(User.telegram_id == message.from_user.id))
         user = result.scalar_one_or_none()
         if user is None:
             return

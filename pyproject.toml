@@ -1,6 +1,6 @@
 [project]
 name = "bina"
-version = "0.1.0"
+version = "0.1.1"
 description = "Bina — a modular, multi-user Telegram news bot with built-in translation."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -46,6 +46,14 @@ target-version = ["py311"]
 [tool.mypy]
 python_version = "3.11"
 strict = true
+
+# feedparser and apscheduler ship no py.typed marker / stub package, so mypy
+# can only see them as Any — that's a packaging gap upstream, not a bug here.
+# feedparser و apscheduler هیچ py.typed marker یا بسته‌ی stub ندارن، پس mypy
+# فقط می‌تونه اون‌ها رو Any ببینه — این یک نقص packaging در بالادسته، نه باگ اینجا.
+[[tool.mypy.overrides]]
+module = ["feedparser.*", "apscheduler.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

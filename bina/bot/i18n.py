@@ -15,7 +15,7 @@ t(key, lang) عبور می‌کنند. این ماژول تنها جاییه ک�
 from __future__ import annotations
 
 import json
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 
 LOCALES_DIR = Path(__file__).resolve().parent.parent / "locales"
@@ -23,12 +23,15 @@ DEFAULT_LANG = "en"
 SUPPORTED_LANGS = ("en", "fa")
 
 
-@lru_cache(maxsize=None)
+@cache
 def _load(lang: str) -> dict[str, str]:
     path = LOCALES_DIR / f"{lang}.json"
     if not path.exists():
         return {}
-    return json.loads(path.read_text(encoding="utf-8"))
+    # Explicit annotation so mypy doesn't widen json.loads()'s Any return.
+    # annotation صریح تا mypy برگشتی Any از json.loads() را گسترش ندهد.
+    data: dict[str, str] = json.loads(path.read_text(encoding="utf-8"))
+    return data
 
 
 def t(key: str, lang: str, **kwargs: object) -> str:

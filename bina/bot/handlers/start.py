@@ -40,9 +40,7 @@ async def handle_start(message: Message) -> None:
     telegram_id = message.from_user.id
 
     async with get_session() as session:
-        result = await session.execute(
-            select(User).where(User.telegram_id == telegram_id)
-        )
+        result = await session.execute(select(User).where(User.telegram_id == telegram_id))
         user = result.scalar_one_or_none()
 
         if user is None:

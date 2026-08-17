@@ -72,9 +72,7 @@ async def test_different_languages_are_translated_independently(session_factory)
         await session.commit()
         await session.refresh(feed)
 
-        article = Article(
-            feed_id=feed.id, guid="g1", title="Hello", summary=None, link="https://x"
-        )
+        article = Article(feed_id=feed.id, guid="g1", title="Hello", summary=None, link="https://x")
         session.add(article)
         await session.commit()
         await session.refresh(article)

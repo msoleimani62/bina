@@ -57,7 +57,11 @@ def _format_message(translation: ArticleTranslation, link: str, limit: int) -> s
 def _save_button(article_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="⭐", callback_data=f"{SAVE_ARTICLE_CALLBACK_PREFIX}{article_id}")]
+            [
+                InlineKeyboardButton(
+                    text="⭐", callback_data=f"{SAVE_ARTICLE_CALLBACK_PREFIX}{article_id}"
+                )
+            ]
         ]
     )
 
@@ -120,7 +124,9 @@ async def deliver_article_to_user(
     return True
 
 
-async def run_delivery_cycle(session: AsyncSession, bot: Bot, translator: TranslatorProvider) -> int:
+async def run_delivery_cycle(
+    session: AsyncSession, bot: Bot, translator: TranslatorProvider
+) -> int:
     """Deliver every undelivered article to every eligible user.
 
     Returns the total number of messages actually sent.
@@ -135,8 +141,10 @@ async def run_delivery_cycle(session: AsyncSession, bot: Bot, translator: Transl
         feed_ids = [f.id for f in feeds]
 
         articles = (
-            await session.execute(select(Article).where(Article.feed_id.in_(feed_ids)))
-        ).scalars().all()
+            (await session.execute(select(Article).where(Article.feed_id.in_(feed_ids))))
+            .scalars()
+            .all()
+        )
 
         for article in articles:
             delivered = await deliver_article_to_user(session, bot, user, article, translator)

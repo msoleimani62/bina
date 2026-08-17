@@ -21,9 +21,7 @@ SAVE_ARTICLE_CALLBACK_PREFIX = "save_article:"
 
 async def save_article(session: AsyncSession, user_id: int, article_id: int) -> SavedItem:
     result = await session.execute(
-        select(SavedItem).where(
-            SavedItem.user_id == user_id, SavedItem.article_id == article_id
-        )
+        select(SavedItem).where(SavedItem.user_id == user_id, SavedItem.article_id == article_id)
     )
     existing = result.scalar_one_or_none()
     if existing is not None:
@@ -50,9 +48,7 @@ async def list_saved(
 
 async def mark_read(session: AsyncSession, user_id: int, saved_item_id: int) -> bool:
     result = await session.execute(
-        select(SavedItem).where(
-            SavedItem.id == saved_item_id, SavedItem.user_id == user_id
-        )
+        select(SavedItem).where(SavedItem.id == saved_item_id, SavedItem.user_id == user_id)
     )
     item = result.scalar_one_or_none()
     if item is None:
@@ -63,9 +59,7 @@ async def mark_read(session: AsyncSession, user_id: int, saved_item_id: int) -> 
 
 async def delete_saved(session: AsyncSession, user_id: int, saved_item_id: int) -> bool:
     result = await session.execute(
-        select(SavedItem).where(
-            SavedItem.id == saved_item_id, SavedItem.user_id == user_id
-        )
+        select(SavedItem).where(SavedItem.id == saved_item_id, SavedItem.user_id == user_id)
     )
     item = result.scalar_one_or_none()
     if item is None:

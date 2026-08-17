@@ -33,9 +33,7 @@ async def handle_settings(message: Message) -> None:
         return
 
     async with get_session() as session:
-        result = await session.execute(
-            select(User).where(User.telegram_id == message.from_user.id)
-        )
+        result = await session.execute(select(User).where(User.telegram_id == message.from_user.id))
         user = result.scalar_one_or_none()
         if user is None:
             return
@@ -43,9 +41,21 @@ async def handle_settings(message: Message) -> None:
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text=t("settings_language", lang), callback_data="settings_open_lang")],
-            [InlineKeyboardButton(text=t("menu_subscriptions", lang), callback_data="settings_hint_categories")],
-            [InlineKeyboardButton(text=t("settings_mute_list", lang), callback_data="settings_hint_mute")],
+            [
+                InlineKeyboardButton(
+                    text=t("settings_language", lang), callback_data="settings_open_lang"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=t("menu_subscriptions", lang), callback_data="settings_hint_categories"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=t("settings_mute_list", lang), callback_data="settings_hint_mute"
+                )
+            ],
             [InlineKeyboardButton(text=t("menu_saved", lang), callback_data="settings_hint_saved")],
         ]
     )
@@ -54,7 +64,14 @@ async def handle_settings(message: Message) -> None:
 
 @router.callback_query(F.data == "settings_open_lang")
 async def handle_open_lang(callback: CallbackQuery) -> None:
-    if callback.from_user is None or callback.message is None:
+    if callback.from_user is None:
+        return
+    # An old/inaccessible message can't be edited — bail out early rather
+    # than crash; the callback is still answered so the tap doesn't hang.
+    # پیام قدیمی/غیرقابل‌دسترس قابل ویرایش نیست — به‌جای کرش، زودتر خارج
+    # می‌شویم؛ callback همچنان answer می‌شود تا ضربه‌ی کاربر معلق نماند.
+    if not isinstance(callback.message, Message):
+        await callback.answer()
         return
 
     async with get_session() as session:
@@ -85,7 +102,7 @@ async def handle_open_lang(callback: CallbackQuery) -> None:
 
 @router.callback_query(F.data.startswith(_LANG_PREFIX))
 async def handle_set_lang(callback: CallbackQuery) -> None:
-    if callback.from_user is None:
+    if callback.from_user is None or callback.data is None:
         return
     new_lang = callback.data.removeprefix(_LANG_PREFIX)
 

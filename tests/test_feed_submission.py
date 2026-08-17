@@ -37,7 +37,9 @@ async def test_valid_feed_is_created_on_probation_and_followed(session_factory, 
         await session.commit()
         await session.refresh(user)
 
-        feed = await submit_feed(session, client=None, user_id=user.id, url="https://example.com/feed")
+        feed = await submit_feed(
+            session, client=None, user_id=user.id, url="https://example.com/feed"
+        )
         await session.commit()
 
         assert feed.status == FeedStatus.PROBATION

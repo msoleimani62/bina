@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import calendar
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import feedparser
 import httpx
@@ -45,9 +45,7 @@ class NormalizedEntry:
 async def fetch_raw(url: str, client: httpx.AsyncClient) -> str:
     """Fetch the raw feed body over HTTP. Raises FeedFetchError on failure."""
     try:
-        response = await client.get(
-            url, timeout=DEFAULT_TIMEOUT_SECONDS, follow_redirects=True
-        )
+        response = await client.get(url, timeout=DEFAULT_TIMEOUT_SECONDS, follow_redirects=True)
         response.raise_for_status()
     except httpx.HTTPError as exc:
         # Wrap every httpx exception in our own type so callers only need
@@ -86,7 +84,7 @@ def _extract_published_at(entry: feedparser.FeedParserDict) -> datetime | None:
     # feedparser gives a UTC struct_time; calendar.timegm avoids local-tz drift.
     # feedparser یک struct_time به‌وقت UTC می‌دهد؛ calendar.timegm از خطای منطقه‌ی
     # زمانی محلی جلوگیری می‌کند.
-    return datetime.fromtimestamp(calendar.timegm(struct_time), tz=timezone.utc)
+    return datetime.fromtimestamp(calendar.timegm(struct_time), tz=UTC)
 
 
 def parse_feed_content(raw: str) -> list[NormalizedEntry]:

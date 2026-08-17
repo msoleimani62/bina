@@ -44,6 +44,4 @@ def test_locale_key_parity():
 
     # Every key must exist in both files — no orphaned translations.
     # هر کلید باید در هر دو فایل وجود داشته باشد — بدون ترجمه‌ی یتیم.
-    assert set(en.keys()) == set(fa.keys()), (
-        f"Locale key mismatch: {set(en) ^ set(fa)}"
-    )
+    assert set(en.keys()) == set(fa.keys()), f"Locale key mismatch: {set(en) ^ set(fa)}"

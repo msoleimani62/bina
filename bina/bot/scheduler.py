@@ -13,7 +13,7 @@ even if nobody opens the bot for days.
 from __future__ import annotations
 
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import httpx
 from aiogram import Bot
@@ -38,7 +38,7 @@ def _is_due(feed: Feed, now: datetime) -> bool:
 
 async def run_ingest_and_deliver(bot: Bot, translator: TranslatorProvider) -> None:
     """One full cycle: fetch every due feed, then deliver whatever is new."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     async with httpx.AsyncClient() as client, get_session() as session:
         feeds = (await session.execute(select(Feed))).scalars().all()
@@ -63,5 +63,5 @@ def build_scheduler(bot: Bot, interval_minutes: int = DEFAULT_CYCLE_MINUTES) -> 
             provider = GoogleTranslateProvider(api_key, translate_client)
             await run_ingest_and_deliver(bot, provider)
 
-    scheduler.add_job(_job, "interval", minutes=interval_minutes, next_run_time=datetime.now())
+    scheduler.add_job(_job, "interval", minutes=interval_minutes, next_run_time=datetime.now(UTC))
     return scheduler

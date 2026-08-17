@@ -9,6 +9,7 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from bina.bot.i18n import t
 from bina.components.subscriptions.service import (
@@ -24,7 +25,7 @@ router = Router(name="subscriptions")
 _CALLBACK_PREFIX = "sub_toggle:"
 
 
-async def _build_keyboard(session, user_id: int) -> InlineKeyboardMarkup:
+async def _build_keyboard(session: AsyncSession, user_id: int) -> InlineKeyboardMarkup:
     categories = await list_available_categories(session)
     subscribed = await get_user_categories(session, user_id)
 
@@ -48,9 +49,7 @@ async def handle_categories(message: Message) -> None:
         return
 
     async with get_session() as session:
-        result = await session.execute(
-            select(User).where(User.telegram_id == message.from_user.id)
-        )
+        result = await session.execute(select(User).where(User.telegram_id == message.from_user.id))
         user = result.scalar_one_or_none()
         if user is None:
             return
@@ -63,7 +62,14 @@ async def handle_categories(message: Message) -> None:
 
 @router.callback_query(F.data.startswith(_CALLBACK_PREFIX))
 async def handle_toggle(callback: CallbackQuery) -> None:
-    if callback.from_user is None or callback.message is None:
+    if callback.from_user is None or callback.data is None:
+        return
+    # An old/inaccessible message can't be edited — bail out early rather
+    # than crash; the callback is still answered so the tap doesn't hang.
+    # پیام قدیمی/غیرقابل‌دسترس قابل ویرایش نیست — به‌جای کرش، زودتر خارج
+    # می‌شویم؛ callback همچنان answer می‌شود تا ضربه‌ی کاربر معلق نماند.
+    if not isinstance(callback.message, Message):
+        await callback.answer()
         return
 
     category = callback.data.removeprefix(_CALLBACK_PREFIX)

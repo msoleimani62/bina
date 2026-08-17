@@ -31,9 +31,7 @@ async def list_followed_feeds(session: AsyncSession, user_id: int) -> list[Feed]
 
     if categories:
         by_category = await session.execute(
-            select(Feed).where(
-                Feed.status == FeedStatus.ACTIVE, Feed.category.in_(categories)
-            )
+            select(Feed).where(Feed.status == FeedStatus.ACTIVE, Feed.category.in_(categories))
         )
         for feed in by_category.scalars().all():
             feeds[feed.id] = feed

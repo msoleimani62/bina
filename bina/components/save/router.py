@@ -17,9 +17,15 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from bina.bot.i18n import t
-from bina.components.save.service import SAVE_ARTICLE_CALLBACK_PREFIX, delete_saved, mark_read, save_article
+from bina.components.save.service import (
+    SAVE_ARTICLE_CALLBACK_PREFIX,
+    delete_saved,
+    mark_read,
+    save_article,
+)
 from bina.core.db import get_session
 from bina.core.models import User
 
@@ -30,14 +36,14 @@ _READ_PREFIX = "save_read:"
 _DELETE_PREFIX = "save_delete:"
 
 
-async def _get_user(session, telegram_id: int) -> User | None:
+async def _get_user(session: AsyncSession, telegram_id: int) -> User | None:
     result = await session.execute(select(User).where(User.telegram_id == telegram_id))
     return result.scalar_one_or_none()
 
 
 @router.callback_query(F.data.startswith(_SAVE_PREFIX))
 async def handle_save(callback: CallbackQuery) -> None:
-    if callback.from_user is None:
+    if callback.from_user is None or callback.data is None:
         return
     article_id = int(callback.data.removeprefix(_SAVE_PREFIX))
 
@@ -90,7 +96,7 @@ async def handle_list_saved(message: Message) -> None:
 
 @router.callback_query(F.data.startswith(_READ_PREFIX))
 async def handle_mark_read(callback: CallbackQuery) -> None:
-    if callback.from_user is None:
+    if callback.from_user is None or callback.data is None:
         return
     saved_item_id = int(callback.data.removeprefix(_READ_PREFIX))
 
@@ -107,7 +113,14 @@ async def handle_mark_read(callback: CallbackQuery) -> None:
 
 @router.callback_query(F.data.startswith(_DELETE_PREFIX))
 async def handle_delete(callback: CallbackQuery) -> None:
-    if callback.from_user is None or callback.message is None:
+    if callback.from_user is None or callback.data is None:
+        return
+    # An old/inaccessible message can't be deleted via the Bot API — bail
+    # out early rather than crash on a missing .delete() attribute.
+    # پیام قدیمی/غیرقابل‌دسترس از طریق Bot API قابل حذف نیست — به‌جای کرش
+    # روی نبود متد .delete()، زودتر خارج می‌شویم.
+    if not isinstance(callback.message, Message):
+        await callback.answer()
         return
     saved_item_id = int(callback.data.removeprefix(_DELETE_PREFIX))
 

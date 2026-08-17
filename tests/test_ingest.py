@@ -12,9 +12,9 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from bina.core import ingest as ingest_module
 from bina.core.fetcher import FeedFetchError, NormalizedEntry
 from bina.core.models import Article, Base, Feed, FeedStatus
-from bina.core import ingest as ingest_module
 
 
 @pytest.fixture
@@ -80,9 +80,7 @@ async def test_feed_marked_broken_after_max_failures(session_factory, monkeypatc
         assert feed.status == FeedStatus.BROKEN
 
 
-async def test_feed_promoted_out_of_probation_with_enough_articles(
-    session_factory, monkeypatch
-):
+async def test_feed_promoted_out_of_probation_with_enough_articles(session_factory, monkeypatch):
     entries = [_entry(n) for n in range(ingest_module.PROBATION_MIN_ARTICLES)]
 
     async def fake_fetch_and_parse(url, client):

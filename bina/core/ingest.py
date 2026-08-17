@@ -12,15 +12,14 @@ fetcher.py (شبکه + پارس) را به دیتابیس متصل می‌کند
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
+import httpx
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bina.core.fetcher import FeedFetchError, NormalizedEntry, fetch_and_parse
 from bina.core.models import Article, Feed, FeedStatus
-
-import httpx
 
 # Promotion threshold agreed on earlier: enough real activity in a short
 # window is treated as evidence the feed is worth sharing with everyone.
@@ -71,7 +70,7 @@ async def _maybe_promote(session: AsyncSession, feed: Feed) -> None:
     if feed.status != FeedStatus.PROBATION:
         return
 
-    window_start = datetime.now(timezone.utc) - timedelta(days=PROBATION_WINDOW_DAYS)
+    window_start = datetime.now(UTC) - timedelta(days=PROBATION_WINDOW_DAYS)
     count_result = await session.execute(
         select(func.count(Article.id)).where(
             Article.feed_id == feed.id, Article.fetched_at >= window_start
@@ -85,9 +84,7 @@ async def _maybe_promote(session: AsyncSession, feed: Feed) -> None:
         feed.status = FeedStatus.ACTIVE
 
 
-async def ingest_feed(
-    session: AsyncSession, feed: Feed, client: httpx.AsyncClient
-) -> int:
+async def ingest_feed(session: AsyncSession, feed: Feed, client: httpx.AsyncClient) -> int:
     """Fetch, parse, and store new articles for a single feed.
 
     Returns the number of newly-inserted articles. Never raises on a feed
@@ -110,7 +107,7 @@ async def ingest_feed(
     # یک دریافت موفق هر سابقه‌ی شکست قبلی را پاک می‌کند، حتی اگر همین دریافت
     # هیچ ورودی جدیدی نداشته باشد.
     feed.consecutive_failures = 0
-    feed.last_fetched_at = datetime.now(timezone.utc)
+    feed.last_fetched_at = datetime.now(UTC)
 
     new_count = await _insert_new_articles(session, feed, entries)
     await _maybe_promote(session, feed)

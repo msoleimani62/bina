@@ -52,23 +52,17 @@ class Feed(Base):
     status: Mapped[FeedStatus] = mapped_column(
         Enum(FeedStatus), default=FeedStatus.PROBATION, nullable=False
     )
-    added_by_user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id"), nullable=True
-    )
+    added_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     # Minutes between fetches; the scheduler reads this per-feed.
     # فاصله‌ی زمانی بین دریافت‌ها به دقیقه؛ زمان‌بند این مقدار را برای هر فید می‌خواند.
     fetch_interval_minutes: Mapped[int] = mapped_column(Integer, default=60)
-    last_fetched_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    last_fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # Reset to 0 on any successful fetch; incremented on failure.
     # با هر دریافت موفق صفر می‌شود؛ با هر شکست یک واحد افزایش می‌یابد.
     consecutive_failures: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    articles: Mapped[list["Article"]] = relationship(back_populates="feed")
+    articles: Mapped[list[Article]] = relationship(back_populates="feed")
 
 
 class Article(Base):
@@ -87,17 +81,11 @@ class Article(Base):
     link: Mapped[str] = mapped_column(String(2048), nullable=False)
     image_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     source_lang: Mapped[str | None] = mapped_column(String(8), nullable=True)
-    published_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    fetched_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    feed: Mapped["Feed"] = relationship(back_populates="articles")
-    translations: Mapped[list["ArticleTranslation"]] = relationship(
-        back_populates="article"
-    )
+    feed: Mapped[Feed] = relationship(back_populates="articles")
+    translations: Mapped[list[ArticleTranslation]] = relationship(back_populates="article")
 
 
 class ArticleTranslation(Base):
@@ -112,9 +100,7 @@ class ArticleTranslation(Base):
     """
 
     __tablename__ = "article_translations"
-    __table_args__ = (
-        UniqueConstraint("article_id", "target_lang", name="uq_article_lang"),
-    )
+    __table_args__ = (UniqueConstraint("article_id", "target_lang", name="uq_article_lang"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     article_id: Mapped[int] = mapped_column(ForeignKey("articles.id"), nullable=False)
@@ -125,7 +111,7 @@ class ArticleTranslation(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    article: Mapped["Article"] = relationship(back_populates="translations")
+    article: Mapped[Article] = relationship(back_populates="translations")
 
 
 class User(Base):
@@ -139,16 +125,12 @@ class User(Base):
     # Language articles are translated into for this user.
     # زبانی که مقالات برای این کاربر به آن ترجمه می‌شوند.
     target_lang: Mapped[str] = mapped_column(String(8), default="fa")
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class UserSubscription(Base):
     __tablename__ = "user_subscriptions"
-    __table_args__ = (
-        UniqueConstraint("user_id", "category", name="uq_user_category"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "category", name="uq_user_category"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
@@ -164,9 +146,7 @@ class UserDelivery(Base):
     """
 
     __tablename__ = "user_deliveries"
-    __table_args__ = (
-        UniqueConstraint("user_id", "article_id", name="uq_user_article_delivery"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "article_id", name="uq_user_article_delivery"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
@@ -174,6 +154,9 @@ class UserDelivery(Base):
     delivered_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class UserFeedSubscription(Base):
     """
     An explicit per-feed follow, independent of category subscriptions.
     یک دنبال‌کردن صریح در سطح فید، مستقل از اشتراک دسته‌بندی.
@@ -187,9 +170,7 @@ class UserDelivery(Base):
     """
 
     __tablename__ = "user_feed_subscriptions"
-    __table_args__ = (
-        UniqueConstraint("user_id", "feed_id", name="uq_user_feed_subscription"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "feed_id", name="uq_user_feed_subscription"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
@@ -212,9 +193,7 @@ class SavedItemStatus(str, enum.Enum):
 
 class SavedItem(Base):
     __tablename__ = "saved_items"
-    __table_args__ = (
-        UniqueConstraint("user_id", "article_id", name="uq_user_article_saved"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "article_id", name="uq_user_article_saved"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
@@ -222,6 +201,4 @@ class SavedItem(Base):
     status: Mapped[SavedItemStatus] = mapped_column(
         Enum(SavedItemStatus), default=SavedItemStatus.UNREAD
     )
-    saved_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    saved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

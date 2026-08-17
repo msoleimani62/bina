@@ -46,7 +46,9 @@ async def submit_feed(
         if not entries:
             raise InvalidFeedError("Feed parsed but contained no entries.")
 
-        feed = Feed(url=url, category=category, status=FeedStatus.PROBATION, added_by_user_id=user_id)
+        feed = Feed(
+            url=url, category=category, status=FeedStatus.PROBATION, added_by_user_id=user_id
+        )
         session.add(feed)
         await session.flush()  # assign feed.id before we reference it below
 
